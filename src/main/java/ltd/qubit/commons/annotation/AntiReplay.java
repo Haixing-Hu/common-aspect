@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright (c) 2017 - 2024.
-//    Nanjing Smart Medical Investment Operation Service Co. Ltd.
+//    Copyright (c) 2022 - 2024.
+//    Haixing Hu, Qubit Co. Ltd.
 //
 //    All rights reserved.
 //

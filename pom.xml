@@ -28,9 +28,10 @@
       <groupId>ltd.qubit</groupId>
       <artifactId>common-java</artifactId>
     </dependency>
+    <!-- Apache Commons -->
     <dependency>
-      <groupId>ltd.qubit</groupId>
-      <artifactId>common-test</artifactId>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
     </dependency>
     <!-- Spring -->
     <dependency>
@@ -69,6 +70,23 @@
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>ltd.qubit</groupId>
+      <artifactId>common-unit-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ltd.qubit</groupId>
+      <artifactId>common-integration-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- logging implementation for unit testing -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>     <!-- only need in unit test -->
     </dependency>
   </dependencies>
 </project>

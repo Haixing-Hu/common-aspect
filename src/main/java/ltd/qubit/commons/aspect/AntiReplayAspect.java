@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright (c) 2017 - 2024.
-//    Nanjing Smart Medical Investment Operation Service Co. Ltd.
+//    Copyright (c) 2022 - 2024.
+//    Haixing Hu, Qubit Co. Ltd.
 //
 //    All rights reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package ltd.qubit.common.aspect;
+package ltd.qubit.commons.aspect;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -100,8 +100,9 @@ public class AntiReplayAspect {
    */
   private String md5(final String content) {
     try {
-      return Base64.encodeBase64String(
-          MessageDigest.getInstance("MD5").digest(content.getBytes(StandardCharsets.UTF_8)));
+      final MessageDigest md5 = MessageDigest.getInstance("MD5");
+      final byte[] bytes = md5.digest(content.getBytes(StandardCharsets.UTF_8));
+      return Base64.encodeBase64String(bytes);
     } catch (final Exception e) {
       LOGGER.error("md5 error", e);
     }

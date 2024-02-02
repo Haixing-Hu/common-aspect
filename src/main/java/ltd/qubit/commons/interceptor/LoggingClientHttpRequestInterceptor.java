@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//    Copyright (c) 2017 - 2022.
-//    Nanjing Smart Medical Investment Operation Service Co. Ltd.
+//    Copyright (c) 2022 - 2024.
+//    Haixing Hu, Qubit Co. Ltd.
 //
 //    All rights reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package ltd.qubit.common.interceptor;
+package ltd.qubit.commons.interceptor;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
