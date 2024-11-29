@@ -22,10 +22,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import ltd.qubit.commons.text.jackson.CustomizedJsonMapper;
-
 import ltd.qubit.commons.interceptor.testbed.LoginParams;
 import ltd.qubit.commons.interceptor.testbed.LoginResponse;
+import ltd.qubit.commons.text.jackson.CustomizedJsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
