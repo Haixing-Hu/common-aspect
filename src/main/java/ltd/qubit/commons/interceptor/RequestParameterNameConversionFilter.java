@@ -14,12 +14,17 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import ltd.qubit.commons.text.CaseFormat;
@@ -37,6 +42,13 @@ import static ltd.qubit.commons.lang.Argument.requireNonNull;
  */
 public class RequestParameterNameConversionFilter extends OncePerRequestFilter {
 
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+  /**
+   * 是否启用此拦截器。
+   */
+  private boolean enabled = true;
+
   /**
    * 参数名称转换策略。
    */
@@ -46,6 +58,14 @@ public class RequestParameterNameConversionFilter extends OncePerRequestFilter {
    * 是否允许使用未经转换的原始参数名称。
    */
   private boolean allowNonConvertedName = true;
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(final boolean enabled) {
+    this.enabled = enabled;
+  }
 
   public final CaseFormat getNamingStrategy() {
     return namingStrategy;
@@ -64,9 +84,40 @@ public class RequestParameterNameConversionFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(final HttpServletRequest request,
-      final HttpServletResponse response, final FilterChain filterChain)
-      throws ServletException, IOException {
+  protected void initFilterBean() {
+    final FilterConfig filterConfig = getFilterConfig();
+    if (filterConfig == null) {
+      return;
+    }
+    final String enabledValue = filterConfig.getInitParameter("enabled");
+    if (enabledValue != null) {
+      enabled = "true".equals(enabledValue);
+    }
+    final String namingStrategyValue = filterConfig.getInitParameter("namingStrategy");
+    if (namingStrategyValue != null) {
+      namingStrategy = CaseFormat.valueOf(namingStrategyValue);
+    }
+    final String allowNonConvertedNameValue = filterConfig.getInitParameter("allowNonConvertedName");
+    if (allowNonConvertedNameValue != null) {
+      allowNonConvertedName = "true".equals(allowNonConvertedNameValue);
+    }
+  }
+
+  @Override
+  protected void doFilterInternal(@Nonnull final HttpServletRequest request,
+      @Nonnull final HttpServletResponse response,
+      @Nonnull final FilterChain filterChain) throws ServletException, IOException {
+    if (enabled) {
+      doFilterInternalImpl(request, response, filterChain);
+    } else {
+      logger.debug("RequestParameterNameConversionFilter is disabled, bypassing it.");
+      filterChain.doFilter(request, response);
+    }
+  }
+
+  private void doFilterInternalImpl(final HttpServletRequest request,
+      @Nonnull final HttpServletResponse response,
+      @Nonnull final FilterChain filterChain) throws ServletException, IOException {
     final Map<String, String[]> parameters = new ConcurrentHashMap<>();
     for (final String name : request.getParameterMap().keySet()) {
       final String[] value = request.getParameterValues(name);
@@ -75,9 +126,7 @@ public class RequestParameterNameConversionFilter extends OncePerRequestFilter {
       if (allowNonConvertedName) {
         parameters.put(name, value);
       }
-      if (logger.isTraceEnabled()) {
-        logger.trace("Convert parameter name '" + name + "' to '" + convertedName + "'");
-      }
+      logger.debug("Convert parameter name '{}' to '{}'", name, convertedName);
     }
     filterChain.doFilter(new HttpServletRequestWrapper(request) {
       @Override

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<!--  -->
+<!--    Copyright (c) 2017 - 2024. -->
+<!--    Nanjing Smart Medical Investment Operation Service Co. Ltd. -->
+<!--  -->
+<!--    All rights reserved. -->
+<!--  -->
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:mvc="http://www.springframework.org/schema/mvc"
+  xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- 配置 HelloController -->
+  <bean class="ltd.qubit.commons.interceptor.testbed.HelloController" />
+
+
+  <!-- 配置 HTTP 头所接受的 ContentType -->
+  <bean id="contentNegotiationManager"
+    class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+    <property name="defaultContentType" value="application/json" />
+    <property name="favorParameter" value="true" />
+    <property name="parameterName" value="mediaType" />
+    <property name="mediaTypes">
+      <map>
+        <entry key="json" value="application/json" />
+        <entry key="xml" value="application/xml" />
+        <entry key="jpeg" value="image/jpeg" />
+        <entry key="jpg" value="image/jpeg" />
+        <entry key="gif" value="image/gif" />
+        <entry key="gif" value="image/png" />
+        <entry key="wav" value="audio/wav" />
+        <entry key="mp3" value="audio/mp3" />
+        <entry key="mp4" value="video/mp4" />
+        <entry key="avi" value="video/avi" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="default-charset" class="java.nio.charset.Charset" factory-method="forName" >
+    <constructor-arg value="UTF-8"/>
+  </bean>
+
+  <bean id="json-mapper" class="ltd.qubit.commons.text.jackson.CustomizedJsonMapper"/>
+
+  <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
+    <mvc:message-converters>
+      <!-- 设置Spring的 JSON HTTP Message Converter -->
+      <bean id="jackson2HttpMessageConverter"
+        class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="objectMapper" ref="json-mapper"/>    <!-- 定义在 message-formatter.xml 中 -->
+        <property name="defaultCharset" ref="default-charset"/> <!-- 定义在 message-formatter.xml 中 -->
+      </bean>
+    </mvc:message-converters>
+  </mvc:annotation-driven>
+
+  <!-- 配置拦截器 -->
+<!--  <mvc:interceptors>-->
+<!--    &lt;!&ndash; 记录接口执行时间 &ndash;&gt;-->
+<!--    &lt;!&ndash;        <bean class="interceptor.ltd.qubit.commons.ExecutionTimeLoggingInterceptor">&ndash;&gt;-->
+<!--    &lt;!&ndash;            <property name="enabled" value="true" />&ndash;&gt;-->
+<!--    &lt;!&ndash;        </bean>&ndash;&gt;-->
+<!--    &lt;!&ndash; 打印接口的HTTP通讯内容 &ndash;&gt;-->
+<!--    <bean class="ltd.qubit.commons.interceptor.HttpLoggingHandlerInterceptor">-->
+<!--      <property name="defaultCharset" ref="default-charset" />-->
+<!--      <property name="enabled" value="true" />-->
+<!--    </bean>-->
+<!--  </mvc:interceptors>-->
+</beans>

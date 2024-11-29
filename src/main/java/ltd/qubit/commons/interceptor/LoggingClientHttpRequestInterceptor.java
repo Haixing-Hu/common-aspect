@@ -22,14 +22,44 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.lang.NonNull;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import static org.springframework.util.StreamUtils.copyToString;
 
+/**
+ * 此拦截器用于在日志中打印RESTful接口获得的HTTP请求和发送的HTTP响应。
+ * <p>
+ * <b>注意：</b>此拦截器只用于配置 Spring RestTemplate 拦截并打印 RestTemplate
+ * 发出的请求和收到的响应，不能配置到 Spring Web MVC中拦截服务器容器收到的请求和发
+ * 出的响应。
+ * <p>
+ * 如需配置Web拦截器，请使用 Spring 提供的 {@link CommonsRequestLoggingFilter}
+ * 并在 {@code src/resources/webapp/WEB-INF/web.xml} 中进行配置。
+ *
+ * @author 胡海星
+ * @see CommonsRequestLoggingFilter
+ */
 public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+  /**
+   * 是否启用此拦截器。
+   */
+  private boolean enabled;
+
+  /**
+   * 拦截器解码HTTP请求和响应的body内容时，默认使用的字符集。
+   */
   private Charset defaultCharset = StandardCharsets.UTF_8;
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(final boolean enabled) {
+    this.enabled = enabled;
+  }
 
   public final Charset getDefaultCharset() {
     return defaultCharset;
@@ -44,13 +74,17 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
   public ClientHttpResponse intercept(@NonNull final HttpRequest request,
       @NonNull final byte[] body, final ClientHttpRequestExecution execution)
       throws IOException {
-    traceRequest(request, body);
-    final ClientHttpResponse response = execution.execute(request, body);
-    // the traceResponse() will log the response body, so we need to buffer the
-    // response body to avoid the response body being consumed.
-    final BufferedClientHttpResponse bufferedResponse = new BufferedClientHttpResponse(response);
-    traceResponse(bufferedResponse);
-    return bufferedResponse;
+    if (enabled) {
+      traceRequest(request, body);
+    }
+    ClientHttpResponse response = execution.execute(request, body);
+    if (enabled) {
+      // the traceResponse() will log the response body, so we need to buffer the
+      // response body to avoid the response body being consumed.
+      response = new BufferedClientHttpResponse(response);
+      traceResponse(response);
+    }
+    return response;
   }
 
   private void traceRequest(final HttpRequest request, final byte[] body) throws IOException {

@@ -7,7 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package ltd.qubit.common.annotation;
+package ltd.qubit.commons.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

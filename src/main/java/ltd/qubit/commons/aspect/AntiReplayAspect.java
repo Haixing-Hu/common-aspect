@@ -33,8 +33,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ltd.qubit.common.annotation.AntiReplay;
 import ltd.qubit.commons.error.OperationTooFrequentException;
+
+import ltd.qubit.commons.annotation.AntiReplay;
 
 @Aspect
 @EnableAspectJAutoProxy
@@ -46,7 +47,7 @@ public class AntiReplayAspect {
   private StringRedisTemplate commonStringRedisTemplate;
 
   // 扫描所有使用NoRepeat注解修饰的方法
-  @Around(value = "@annotation(ltd.qubit.common.annotation.AntiReplay) ")
+  @Around(value = "@annotation(annotation.ltd.qubit.commons.AntiReplay) ")
   public Object annotationAround(final ProceedingJoinPoint joinPoint) throws Throwable {
     final long startTime = System.currentTimeMillis();
     // 获取方法
