@@ -20,11 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
 
 /**
- * 一个{@link HttpServletResponse}的实现，它包装了另一个{@link HttpServletResponse}，
+ * 一个{@link jakarta.servlet.http.HttpServletResponse}的实现，它包装了另一个{@link jakarta.servlet.http.HttpServletResponse}，
  * 将写入的数据保存到一个内部缓冲区中。然后，提供一个方法来返回这个缓冲区的内容，从而允许
  * 反复读取。
  *
@@ -41,12 +40,12 @@ public class BufferedHttpServletResponse extends HttpServletResponseWrapper {
    */
   private final Charset charset;
 
-  public BufferedHttpServletResponse(final HttpServletResponse response)
+  public BufferedHttpServletResponse(final jakarta.servlet.http.HttpServletResponse response)
       throws IOException {
     this(response, StandardCharsets.UTF_8);
   }
 
-  public BufferedHttpServletResponse(final HttpServletResponse response,
+  public BufferedHttpServletResponse(final jakarta.servlet.http.HttpServletResponse response,
       final Charset charset) {
     super(response);
     this.output = new ByteArrayOutputStream();

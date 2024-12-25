@@ -21,7 +21,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 import org.slf4j.Logger;
@@ -32,6 +31,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import ltd.qubit.commons.text.CharsetUtils;
 
+import static ltd.qubit.commons.interceptor.HttpServletUtils.isBinaryOrFileDownload;
 import static ltd.qubit.commons.interceptor.HttpServletUtils.isMultipart;
 
 /**
@@ -90,7 +90,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(@Nonnull final HttpServletRequest request,
-      @Nonnull final HttpServletResponse response,
+      @Nonnull final jakarta.servlet.http.HttpServletResponse response,
       @Nonnull final FilterChain filterChain) throws ServletException, IOException {
     if (enabled) {
       final String charsetName = request.getCharacterEncoding();
@@ -150,7 +150,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     logger.debug("=========================== response begin ===========================");
     logger.debug("Status code  : {}", response.getStatus());
     loggingHeaders(response.getHeaders());
-    logger.debug("Response body: {}", response.getBodyAsString());
+    if (isBinaryOrFileDownload(response)) {
+      logger.debug("Response body: {}", "<Ignore the content of binary or file download>");
+    } else {
+      logger.debug("Response body: {}", response.getBodyAsString());
+    }
     logger.debug("============================ response end ============================");
   }
 

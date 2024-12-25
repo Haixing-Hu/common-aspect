@@ -8,13 +8,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package ltd.qubit.commons.interceptor.testbed;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import ltd.qubit.commons.lang.Equality;
 import ltd.qubit.model.contact.Phone;
@@ -39,7 +44,7 @@ public class HelloController {
       method = GET,
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public String sayHello(@RequestParam final String name) {
+  public String sayHello(@RequestParam(required = true) final String name) {
     return "Hello " + name;
   }
 
@@ -78,5 +83,39 @@ public class HelloController {
     } else {
       throw new IllegalArgumentException("Invalid mobile, verifyCode");
     }
+  }
+
+  @RequestMapping(path = "/login-with-form",
+      method = POST,
+      consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public LoginResponse login(@RequestParam final String username,
+      @RequestParam final String password) {
+    return loginByUsernamePassword(username, password);
+  }
+
+  @PostMapping(path = "/upload",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+      produces = MediaType.TEXT_PLAIN_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public String uploadFile(@RequestParam("file") final MultipartFile file) {
+    // Mock implementation: just return the original filename
+    return "Uploaded file: " + file.getOriginalFilename();
+  }
+
+  @RequestMapping(path = "/download", method = GET)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<byte[]> downloadFile() {
+    final byte[] binaryData = "This is some binary data".getBytes();
+    final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    headers.setContentLength(binaryData.length);
+    final ContentDisposition disposition = ContentDisposition
+        .builder("attachment")
+        .filename("mockfile.bin")
+        .build();
+    headers.setContentDisposition(disposition);
+    return new ResponseEntity<>(binaryData, headers, HttpStatus.OK);
   }
 }
