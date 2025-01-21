@@ -44,9 +44,9 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * 是否启用此拦截器。
+   * 是否启用此拦截器。默认启用。
    */
-  private boolean enabled;
+  private boolean enabled = true;
 
   /**
    * 拦截器解码HTTP请求和响应的body内容时，默认使用的字符集。
