@@ -31,9 +31,44 @@ public class CorsFilter extends OncePerRequestFilter {
 
   public static final String DEFAULT_ALLOW_ORIGIN = "*";
 
+  /**
+   * 默认的跨域请求方法。
+   * <p>
+   * {@code Access-Control-Allow-Methods} 响应头控制哪些请求方法能在跨域请求中使用。
+   */
   public static final String DEFAULT_ALLOW_METHODS = "GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS";
 
-  public static final String DEFAULT_ALLOW_HEADERS = "Authorization, X-Auth-Token, X-Auth-App-Token, X-Auth-User-Token, Content-Type";
+  /**
+   * 默认的跨域请求头。
+   * <p>
+   * {@code Access-Control-Allow-Headers} 响应头控制哪些请求头能在跨域请求中使用。
+   * <p>
+   * 常见的如下
+   * <ul>
+   *   <li>Authorization: 用于身份验证。</li>
+   *   <li>Content-Type: 用于指定请求体的类型。</li>
+   *   <li>X-Auth-Token: 用于身份验证。</li>
+   *   <li>X-Auth-App-Token: 用于应用程序身份验证。</li>
+   *   <li>X-Auth-User-Token: 用于用户身份验证。</li>
+   * </ul>
+   */
+  public static final String DEFAULT_ALLOW_HEADERS = "Authorization, Content-Type, X-Auth-Token, X-Auth-App-Token, X-Auth-User-Token";
+
+  /**
+   * 默认的跨域暴露响应头。
+   * <p>
+   * {@code Access-Control-Expose-Headers} 响应头 控制前端能从跨域响应中访问哪些非默认的响应头。
+   * <p>
+   * 常见的如下：
+   * <ul>
+   * <li>Content-Disposition: 文件下载时的文件名。</li>
+   * <li>ETag: 用于缓存和资源版本管理。</li>
+   * <li>Content-Range: 分段下载时返回的范围。</li>
+   * <li>X-RateLimit-Limit 和 X-RateLimit-Remaining: API 调用速率限制相关信息。</li>
+   * <li>Retry-After: 指定重试请求的等待时间。</li>
+   * </ul>
+   */
+  public static final String DEFAULT_EXPOSE_HEADERS = "Content-Disposition, Content-Range, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After";
 
   public static final String DEFAULT_ALLOW_CREDENTIALS = "false";
 
@@ -53,6 +88,8 @@ public class CorsFilter extends OncePerRequestFilter {
   private String allowMethods = DEFAULT_ALLOW_METHODS;
 
   private String allowHeaders = DEFAULT_ALLOW_HEADERS;
+
+  private String exposeHeaders = DEFAULT_EXPOSE_HEADERS;
 
   private String allowCredentials = DEFAULT_ALLOW_CREDENTIALS;
 
@@ -90,6 +127,14 @@ public class CorsFilter extends OncePerRequestFilter {
 
   public void setAllowHeaders(final String allowHeaders) {
     this.allowHeaders = allowHeaders;
+  }
+
+  public String getExposeHeaders() {
+    return exposeHeaders;
+  }
+
+  public void setExposeHeaders(final String exposeHeaders) {
+    this.exposeHeaders = exposeHeaders;
   }
 
   public String getAllowCredentials() {
@@ -138,6 +183,10 @@ public class CorsFilter extends OncePerRequestFilter {
     if (allowHeadersValue != null) {
       allowHeaders = allowHeadersValue;
     }
+    final String exposeHeadersValue = filterConfig.getInitParameter("exposeHeaders");
+    if (exposeHeadersValue != null) {
+      exposeHeaders = exposeHeadersValue;
+    }
     final String allowCredentialsValue = filterConfig.getInitParameter("allowCredentials");
     if (allowCredentialsValue != null) {
       allowCredentials = allowCredentialsValue;
@@ -164,6 +213,8 @@ public class CorsFilter extends OncePerRequestFilter {
       response.setHeader("Access-Control-Allow-Methods", allowMethods);
       logger.debug("Setting Access-Control-Allow-Headers: {}", allowHeaders);
       response.setHeader("Access-Control-Allow-Headers", allowHeaders);
+      logger.debug("Setting Access-Control-Expose-Headers: {}", exposeHeaders);
+      response.setHeader("Access-Control-Expose-Headers", exposeHeaders);
       logger.debug("Setting Access-Control-Allow-Credentials: {}", allowCredentials);
       response.setHeader("Access-Control-Allow-Credentials", allowCredentials);
       logger.debug("Setting Access-Control-Max-Age: {}", maxAge);
