@@ -51,6 +51,8 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
    */
   private boolean enabled = true;
 
+  private boolean printMultipartContent = false;
+
   /**
    * 拦截器解码HTTP请求和响应的body内容时，默认使用的字符集。
    */
@@ -62,6 +64,14 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
   public void setEnabled(final boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public boolean isPrintMultipartContent() {
+    return printMultipartContent;
+  }
+
+  public void setPrintMultipartContent(final boolean printMultipartContent) {
+    this.printMultipartContent = printMultipartContent;
   }
 
   public final Charset getDefaultCharset() {
@@ -118,7 +128,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     if (isMultipart(request)) {
       // 不打印上传文件的二进制内容
       loggingMultipart(request);
-      logger.debug("Request body: {}", "<Ignore the content of uploaded file>");
+      if (printMultipartContent) {
+        logger.debug("Request body: {}", request.getBodyAsString());
+      } else {
+        logger.debug("Request body: {}", "<Ignore the content of uploaded file>");
+      }
     } else {
       logger.debug("Request body: {}", request.getBodyAsString());
     }
