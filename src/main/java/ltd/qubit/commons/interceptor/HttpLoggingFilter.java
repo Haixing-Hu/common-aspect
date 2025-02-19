@@ -31,9 +31,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import ltd.qubit.commons.text.CharsetUtils;
 
-import static ltd.qubit.commons.interceptor.HttpServletUtils.isBinary;
 import static ltd.qubit.commons.interceptor.HttpServletUtils.isFileDownload;
 import static ltd.qubit.commons.interceptor.HttpServletUtils.isMultipart;
+import static ltd.qubit.commons.interceptor.HttpServletUtils.isTextual;
 
 /**
  * 此过滤器用于在日志中打印 RESTful 接口获得的HTTP请求和发送的HTTP响应。
@@ -52,9 +52,9 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
    */
   private boolean enabled = true;
 
-  private boolean printMultipartContent = false;
+  private boolean printUploadContent = false;
 
-  private boolean printTextFileDownloadContent = false;
+  private boolean printDownloadContent = false;
 
   /**
    * 拦截器解码HTTP请求和响应的body内容时，默认使用的字符集。
@@ -69,20 +69,20 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     this.enabled = enabled;
   }
 
-  public boolean isPrintMultipartContent() {
-    return printMultipartContent;
+  public boolean isPrintUploadTextualContent() {
+    return printUploadContent;
   }
 
-  public void setPrintMultipartContent(final boolean printMultipartContent) {
-    this.printMultipartContent = printMultipartContent;
+  public void setPrintUploadTextualContent(final boolean printUploadTextualContent) {
+    this.printUploadContent = printUploadTextualContent;
   }
 
-  public boolean isPrintTextFileDownloadContent() {
-    return printTextFileDownloadContent;
+  public boolean isPrintDownloadTextualContent() {
+    return printDownloadContent;
   }
 
-  public void setPrintTextFileDownloadContent(final boolean printTextFileDownloadContent) {
-    this.printTextFileDownloadContent = printTextFileDownloadContent;
+  public void setPrintDownloadTextualContent(final boolean printDownloadTextualContent) {
+    this.printDownloadContent = printDownloadTextualContent;
   }
 
   public final Charset getDefaultCharset() {
@@ -139,7 +139,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     if (isMultipart(request)) {
       // 不打印上传文件的二进制内容
       loggingMultipart(request);
-      if (printMultipartContent) {
+      if (printUploadContent && isTextual(request)) {
         logger.debug("Request body: {}", request.getBodyAsString());
       } else {
         logger.debug("Request body: {}", "<Ignore the content of uploaded file>");
@@ -176,10 +176,10 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     logger.debug("Status code  : {}", response.getStatus());
     loggingHeaders(response.getHeaders());
     if (isFileDownload(response)) {
-      if (isBinary(response) || (!printTextFileDownloadContent)) {
-        logger.debug("Response body: {}", "<Ignore the content of file download>");
-      } else {
+      if (printDownloadContent && isTextual(response)) {
         logger.debug("Response body: {}", response.getBodyAsString());
+      } else {
+        logger.debug("Response body: {}", "<Ignore the content of file download>");
       }
     } else {
       logger.debug("Response body: {}", response.getBodyAsString());
