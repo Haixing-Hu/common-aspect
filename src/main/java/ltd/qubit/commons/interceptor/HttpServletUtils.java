@@ -26,6 +26,39 @@ public class HttpServletUtils {
   }
 
   /**
+   * 判定响应是否为文件下载
+   *
+   * @param response
+   *    {@link BufferedHttpServletResponse} 对象。
+   * @return
+   *    若响应是文件下载，返回{@code true}；否则返回{@code false}。
+   */
+  public static boolean isFileDownload(final jakarta.servlet.http.HttpServletResponse response) {
+    // 获取 Content-Disposition 和 Content-Type
+    final String contentDisposition = response.getHeader("Content-Disposition");
+    // 判定 Content-Disposition 是否指示附件或包含文件名
+    return (contentDisposition != null)
+        && (contentDisposition.contains("attachment") || contentDisposition.contains("filename"));
+  }
+
+  /**
+   * 判定响应是否为二进制数据或文件下载
+   *
+   * @param response
+   *    {@link BufferedHttpServletResponse} 对象。
+   * @return
+   *    若响应是文件下载或二进制数据，返回{@code true}；否则返回{@code false}。
+   */
+  public static boolean isBinary(final jakarta.servlet.http.HttpServletResponse response) {
+    final String contentType = response.getContentType();
+    // 判定 Content-Type 是否为常见的二进制数据类型
+    if (contentType != null) {
+      return isBinaryContentType(contentType);
+    }
+    return false;
+  }
+
+  /**
    * 判定响应是否为二进制数据或文件下载
    *
    * @param response

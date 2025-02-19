@@ -31,7 +31,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import ltd.qubit.commons.text.CharsetUtils;
 
-import static ltd.qubit.commons.interceptor.HttpServletUtils.isBinaryOrFileDownload;
+import static ltd.qubit.commons.interceptor.HttpServletUtils.isBinary;
+import static ltd.qubit.commons.interceptor.HttpServletUtils.isFileDownload;
 import static ltd.qubit.commons.interceptor.HttpServletUtils.isMultipart;
 
 /**
@@ -53,6 +54,8 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
   private boolean printMultipartContent = false;
 
+  private boolean printTextFileDownloadContent = false;
+
   /**
    * 拦截器解码HTTP请求和响应的body内容时，默认使用的字符集。
    */
@@ -72,6 +75,14 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
   public void setPrintMultipartContent(final boolean printMultipartContent) {
     this.printMultipartContent = printMultipartContent;
+  }
+
+  public boolean isPrintTextFileDownloadContent() {
+    return printTextFileDownloadContent;
+  }
+
+  public void setPrintTextFileDownloadContent(final boolean printTextFileDownloadContent) {
+    this.printTextFileDownloadContent = printTextFileDownloadContent;
   }
 
   public final Charset getDefaultCharset() {
@@ -164,8 +175,12 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     logger.debug("=========================== response begin ===========================");
     logger.debug("Status code  : {}", response.getStatus());
     loggingHeaders(response.getHeaders());
-    if (isBinaryOrFileDownload(response)) {
-      logger.debug("Response body: {}", "<Ignore the content of binary or file download>");
+    if (isFileDownload(response)) {
+      if (isBinary(response) || (!printTextFileDownloadContent)) {
+        logger.debug("Response body: {}", "<Ignore the content of file download>");
+      } else {
+        logger.debug("Response body: {}", response.getBodyAsString());
+      }
     } else {
       logger.debug("Response body: {}", response.getBodyAsString());
     }
