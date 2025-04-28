@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -35,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ltd.qubit.commons.annotation.AntiReplay;
 import ltd.qubit.commons.error.OperationTooFrequentException;
+import ltd.qubit.commons.util.codec.Base64Utils;
 
 @Aspect
 @EnableAspectJAutoProxy
@@ -46,7 +46,7 @@ public class AntiReplayAspect {
   private StringRedisTemplate commonStringRedisTemplate;
 
   // 扫描所有使用NoRepeat注解修饰的方法
-  @Around(value = "@annotation(annotation.ltd.qubit.commons.AntiReplay) ")
+  @Around(value = "@annotation(ltd.qubit.commons.annotation.AntiReplay)")
   public Object annotationAround(final ProceedingJoinPoint joinPoint) throws Throwable {
     final long startTime = System.currentTimeMillis();
     // 获取方法
@@ -102,7 +102,7 @@ public class AntiReplayAspect {
     try {
       final MessageDigest md5 = MessageDigest.getInstance("MD5");
       final byte[] bytes = md5.digest(content.getBytes(StandardCharsets.UTF_8));
-      return Base64.encodeBase64String(bytes);
+      return Base64Utils.encodeToString(bytes);
     } catch (final Exception e) {
       LOGGER.error("md5 error", e);
     }
@@ -112,8 +112,7 @@ public class AntiReplayAspect {
   private Boolean setRedisLock(final String key, final String value, final Long time,
       final TimeUnit unit) {
     try {
-      return commonStringRedisTemplate.opsForValue()
-                                      .setIfAbsent(key, value, time, unit);
+      return commonStringRedisTemplate.opsForValue().setIfAbsent(key, value, time, unit);
     } catch (final Exception e) {
       LOGGER.error("set redis lock error", e);
       // 如果操作redis出现了异常，默认返回true

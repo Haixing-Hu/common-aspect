@@ -28,11 +28,6 @@
       <groupId>ltd.qubit</groupId>
       <artifactId>common-java</artifactId>
     </dependency>
-    <!-- Apache Commons -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>
