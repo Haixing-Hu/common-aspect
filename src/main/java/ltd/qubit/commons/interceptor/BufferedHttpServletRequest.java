@@ -52,7 +52,9 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
   private final Map<String, String[]> params;
 
   /**
-   * 存储数据的缓冲区。
+   * 存储请求体数据的内部字节数组缓冲区。
+   * 对于 multipart 或 www-form 类型的请求，此缓冲区可能为空或部分填充，
+   * 因为这些类型请求的数据主要通过 parts 和 params 字段处理。
    */
   private final byte[] body;
 
@@ -61,11 +63,34 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
    */
   private final Charset charset;
 
+  /**
+   * 使用指定的请求对象和默认的UTF-8字符集构造一个 {@code BufferedHttpServletRequest}。
+   *
+   * @param request 被包装的原始 {@link HttpServletRequest} 对象。
+   * @throws IOException 如果在读取请求输入流时发生I/O错误。
+   * @throws ServletException 如果在解析 multipart 请求时发生Servlet相关错误。
+   */
   public BufferedHttpServletRequest(final HttpServletRequest request)
       throws IOException, ServletException {
     this(request, StandardCharsets.UTF_8);
   }
 
+  /**
+   * 使用指定的请求对象和字符集构造一个 {@code BufferedHttpServletRequest}。
+   * <p>
+   * 此构造函数会根据请求的 Content-Type 处理请求体：
+   * <ul>
+   *   <li>如果是 multipart 请求，则解析 parts 和 parameters，请求体 {@link #body} 设置为空数组。</li>
+   *   <li>如果是 www-form 请求，则解析 parameters，并将输入流内容读入 {@link #body}。</li>
+   *   <li>对于其他类型的请求，输入流内容将直接读入 {@link #body}。</li>
+   * </ul>
+   * </p>
+   *
+   * @param request 被包装的原始 {@link HttpServletRequest} 对象。
+   * @param charset 用于解码请求体的字符集，主要在 {@link #getBodyAsString()} 中使用。
+   * @throws IOException 如果在读取请求输入流时发生I/O错误。
+   * @throws ServletException 如果在解析 multipart 请求时发生Servlet相关错误。
+   */
   public BufferedHttpServletRequest(final HttpServletRequest request,
       final Charset charset) throws IOException, ServletException {
     super(request);
@@ -85,11 +110,28 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
     this.charset = charset;
   }
 
+  /**
+   * 获取此请求中包含的所有 {@link Part} 对象。
+   * <p>
+   * 如果原始请求不是 multipart 类型，则返回空集合。
+   * </p>
+   *
+   * @return 此请求中所有 {@link Part} 对象的集合，如果不是 multipart 请求则为空集合。
+   */
   @Override
   public Collection<Part> getParts() {
     return parts;
   }
 
+  /**
+   * 返回具有给定名称的请求参数的值；如果参数不存在，则返回 {@code null}。
+   * <p>
+   * 此方法从缓存的参数映射中检索值。
+   * </p>
+   *
+   * @param name 指定参数名称的 {@code String}。
+   * @return 包含参数值的 {@code String}，或如果参数不存在则为 {@code null}。
+   */
   @Override
   public String getParameter(final String name) {
     final String[] values = getParameterMap().get(name);
@@ -100,6 +142,16 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
     }
   }
 
+  /**
+   * 返回此请求参数的 {@code java.util.Map}。
+   * <p>
+   * 如果在构造时解析并缓存了参数（例如对于 multipart 或 www-form 请求），则返回缓存的参数映射。
+   * 否则，它会委托给包装的请求对象来获取参数映射。
+   * 注意：当前实现中，如果内部参数映射为空，则会尝试从父请求获取，这种行为的必要性待确认 (FIXME)。
+   * </p>
+   *
+   * @return 一个不可变的 {@code java.util.Map}，其中包含参数名作为键，参数值数组作为值。
+   */
   @Override
   public Map<String, String[]> getParameterMap() {
     if (params.isEmpty()) {
@@ -111,28 +163,74 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
     }
   }
 
+  /**
+   * 返回此请求中包含的参数名称的 {@code Enumeration}。
+   * <p>
+   * 此枚举基于 {@link #getParameterMap()} 返回的参数名称。
+   * </p>
+   *
+   * @return 此请求中参数名称的 {@code Enumeration}。
+   */
   @Override
   public Enumeration<String> getParameterNames() {
     return Collections.enumeration(getParameterMap().keySet());
   }
 
+  /**
+   * 返回一个 {@code String} 数组，其中包含具有给定名称的请求参数的所有值；如果参数不存在，则返回 {@code null}。
+   * <p>
+   * 此方法从缓存的参数映射中检索值。
+   * </p>
+   *
+   * @param name 指定参数名称的 {@code String}。
+   * @return 包含参数值的 {@code String} 数组，或如果参数不存在则为 {@code null}。
+   */
   @Override
   public String[] getParameterValues(final String name) {
     return getParameterMap().get(name);
   }
 
+  /**
+   * 获取请求体的字节数组副本。
+   * <p>
+   * 对于非 multipart 和非 www-form 请求，这将是完整的请求体。
+   * 对于 multipart 或 www-form 请求，此方法可能返回空数组或部分数据，
+   * 因为这些请求的主要内容通过 {@link #getParts()} 和 {@link #getParameterMap()} 访问。
+   * </p>
+   *
+   * @return 包含请求体数据的字节数组。
+   */
   public byte[] getBody() {
     return body;
   }
 
+  /**
+   * 使用指定的字符集 ({@link #charset}) 将请求体转换为字符串。
+   *
+   * @return 表示请求体的字符串。
+   * @see #getBody()
+   */
   public String getBodyAsString() {
     return new String(body, charset);
   }
 
+  /**
+   * 获取用于解码请求体的字符集。
+   *
+   * @return 当前请求使用的字符集。
+   */
   public Charset getCharset() {
     return charset;
   }
 
+  /**
+   * 获取请求中所有头信息的映射。
+   * <p>
+   * 映射的键是头名称，值是对应头名称的所有值的列表。
+   * </p>
+   *
+   * @return 包含所有请求头及其值的映射。
+   */
   public Map<String, List<String>> getHeaders() {
     final Map<String, List<String>> result = new HashMap<>();
     final Enumeration<String> names = getHeaderNames();
@@ -149,11 +247,29 @@ public class BufferedHttpServletRequest extends HttpServletRequestWrapper {
     return result;
   }
 
+  /**
+   * 返回一个 {@link ServletInputStream}，用于读取此请求的基于内部缓冲区的请求体。
+   * <p>
+   * 多次调用此方法将返回引用相同缓冲数据的流。
+   * </p>
+   *
+   * @return 一个用于读取请求体的 {@link ServletInputStream}。
+   * @throws IOException 如果发生I/O错误。
+   */
   @Override
   public ServletInputStream getInputStream() throws IOException {
     return new BufferedServletInputStream(body);
   }
 
+  /**
+   * 返回一个 {@link BufferedReader}，用于使用 {@link #charset} 字符集读取此请求的基于内部缓冲区的请求体。
+   * <p>
+   * 多次调用此方法将返回引用相同缓冲数据的读取器。
+   * </p>
+   *
+   * @return 一个用于读取请求体的 {@link BufferedReader}。
+   * @throws IOException 如果发生I/O错误。
+   */
   @Override
   public BufferedReader getReader() throws IOException {
     final InputStream in = new ByteArrayInputStream(body);

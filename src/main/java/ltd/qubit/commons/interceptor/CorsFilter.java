@@ -29,6 +29,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 public class CorsFilter extends OncePerRequestFilter {
 
+  /**
+   * 默认允许的来源。
+   */
   public static final String DEFAULT_ALLOW_ORIGIN = "*";
 
   /**
@@ -70,12 +73,24 @@ public class CorsFilter extends OncePerRequestFilter {
    */
   public static final String DEFAULT_EXPOSE_HEADERS = "Content-Disposition, Content-Range, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After";
 
+  /**
+   * 默认是否允许发送凭据。
+   */
   public static final String DEFAULT_ALLOW_CREDENTIALS = "false";
 
+  /**
+   * 预检请求的默认缓存时间（秒）。
+   */
   public static final String DEFAULT_MAX_AGE = "86400";
 
+  /**
+   * 默认是否绕过 OPTIONS 请求。
+   */
   public static final boolean DEFAULT_BYPASS_OPTIONS_REQUESTS = true;
 
+  /**
+   * 日志记录器。
+   */
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
@@ -83,84 +98,191 @@ public class CorsFilter extends OncePerRequestFilter {
    */
   private boolean enabled = true;
 
+  /**
+   * 允许的来源。
+   */
   private String allowOrigin = DEFAULT_ALLOW_ORIGIN;
 
+  /**
+   * 允许的HTTP方法。
+   */
   private String allowMethods = DEFAULT_ALLOW_METHODS;
 
+  /**
+   * 允许的HTTP请求头。
+   */
   private String allowHeaders = DEFAULT_ALLOW_HEADERS;
 
+  /**
+   * 暴露给客户端的HTTP响应头。
+   */
   private String exposeHeaders = DEFAULT_EXPOSE_HEADERS;
 
+  /**
+   * 是否允许发送凭据。
+   */
   private String allowCredentials = DEFAULT_ALLOW_CREDENTIALS;
 
+  /**
+   * 预检请求的缓存时间（秒）。
+   */
   private String maxAge = DEFAULT_MAX_AGE;
 
+  /**
+   * 是否绕过 OPTIONS 请求。
+   */
   private boolean bypassOptionsRequests = DEFAULT_BYPASS_OPTIONS_REQUESTS;
 
+  /**
+   * 检查此过滤器是否启用。
+   *
+   * @return 如果过滤器启用，则返回true；否则返回false。
+   */
   public boolean isEnabled() {
     return enabled;
   }
 
+  /**
+   * 设置此过滤器的启用状态。
+   *
+   * @param enabled 如果为true，则启用过滤器；如果为false，则禁用过滤器。
+   */
   public void setEnabled(final boolean enabled) {
     this.enabled = enabled;
   }
 
+  /**
+   * 获取允许的来源。
+   *
+   * @return 允许的来源字符串。
+   */
   public String getAllowOrigin() {
     return allowOrigin;
   }
 
+  /**
+   * 设置允许的来源。
+   *
+   * @param allowOrigin 允许的来源字符串。
+   */
   public void setAllowOrigin(final String allowOrigin) {
     this.allowOrigin = allowOrigin;
   }
 
+  /**
+   * 获取允许的HTTP方法。
+   *
+   * @return 允许的HTTP方法字符串。
+   */
   public String getAllowMethods() {
     return allowMethods;
   }
 
+  /**
+   * 设置允许的HTTP方法。
+   *
+   * @param allowMethods 允许的HTTP方法字符串。
+   */
   public void setAllowMethods(final String allowMethods) {
     this.allowMethods = allowMethods;
   }
 
+  /**
+   * 获取允许的HTTP请求头。
+   *
+   * @return 允许的HTTP请求头字符串。
+   */
   public String getAllowHeaders() {
     return allowHeaders;
   }
 
+  /**
+   * 设置允许的HTTP请求头。
+   *
+   * @param allowHeaders 允许的HTTP请求头字符串。
+   */
   public void setAllowHeaders(final String allowHeaders) {
     this.allowHeaders = allowHeaders;
   }
 
+  /**
+   * 获取暴露给客户端的HTTP响应头。
+   *
+   * @return 暴露给客户端的HTTP响应头字符串。
+   */
   public String getExposeHeaders() {
     return exposeHeaders;
   }
 
+  /**
+   * 设置暴露给客户端的HTTP响应头。
+   *
+   * @param exposeHeaders 暴露给客户端的HTTP响应头字符串。
+   */
   public void setExposeHeaders(final String exposeHeaders) {
     this.exposeHeaders = exposeHeaders;
   }
 
+  /**
+   * 获取是否允许发送凭据的设置。
+   *
+   * @return 是否允许发送凭据的字符串（"true" 或 "false"）。
+   */
   public String getAllowCredentials() {
     return allowCredentials;
   }
 
+  /**
+   * 设置是否允许发送凭据。
+   *
+   * @param allowCredentials 是否允许发送凭据的字符串（"true" 或 "false"）。
+   */
   public void setAllowCredentials(final String allowCredentials) {
     this.allowCredentials = allowCredentials;
   }
 
+  /**
+   * 获取预检请求的缓存时间。
+   *
+   * @return 预检请求的缓存时间字符串（秒）。
+   */
   public String getMaxAge() {
     return maxAge;
   }
 
+  /**
+   * 设置预检请求的缓存时间。
+   *
+   * @param maxAge 预检请求的缓存时间字符串（秒）。
+   */
   public void setMaxAge(final String maxAge) {
     this.maxAge = maxAge;
   }
 
+  /**
+   * 检查是否配置为绕过OPTIONS请求。
+   *
+   * @return 如果配置为绕过OPTIONS请求，则返回true；否则返回false。
+   */
   public boolean isBypassOptionsRequests() {
     return bypassOptionsRequests;
   }
 
+  /**
+   * 设置是否绕过OPTIONS请求。
+   *
+   * @param bypassOptionsRequests 如果为true，则绕过OPTIONS请求；否则不绕过。
+   */
   public void setBypassOptionsRequests(final boolean bypassOptionsRequests) {
     this.bypassOptionsRequests = bypassOptionsRequests;
   }
 
+  /**
+   * 初始化过滤器Bean。
+   * <p>
+   * 此方法从过滤器配置中读取CORS相关的初始化参数，并相应地配置此过滤器实例。
+   * </p>
+   */
   @Override
   protected void initFilterBean() {
     final FilterConfig filterConfig = getFilterConfig();
@@ -201,6 +323,21 @@ public class CorsFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 对HTTP请求和响应进行CORS处理的核心方法。
+   * <p>
+   * 如果过滤器已启用，此方法会根据配置设置相应的CORS响应头。
+   * 如果配置为绕过OPTIONS请求，并且当前请求是OPTIONS请求，则直接返回200 OK。
+   * 否则，将请求传递给过滤器链中的下一个过滤器。
+   * 如果过滤器被禁用，则直接将请求和响应传递给下一个过滤器，不进行CORS处理。
+   * </p>
+   *
+   * @param request 当前的HTTP请求。
+   * @param response 当前的HTTP响应。
+   * @param filterChain 过滤器链。
+   * @throws ServletException 如果在处理请求或响应时发生Servlet相关异常。
+   * @throws IOException 如果在处理请求或响应时发生I/O异常。
+   */
   @Override
   protected void doFilterInternal(@Nonnull final HttpServletRequest request,
       @Nonnull final HttpServletResponse response,

@@ -41,6 +41,9 @@ import static org.springframework.util.StreamUtils.copyToString;
  */
 public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 
+  /**
+   * 日志记录器。
+   */
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
@@ -53,18 +56,38 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
    */
   private Charset defaultCharset = StandardCharsets.UTF_8;
 
+  /**
+   * 检查此拦截器是否启用。
+   *
+   * @return 如果拦截器启用，则返回true；否则返回false。
+   */
   public boolean isEnabled() {
     return enabled;
   }
 
+  /**
+   * 设置此拦截器的启用状态。
+   *
+   * @param enabled 如果为true，则启用拦截器；如果为false，则禁用拦截器。
+   */
   public void setEnabled(final boolean enabled) {
     this.enabled = enabled;
   }
 
+  /**
+   * 获取默认的字符集。
+   *
+   * @return 默认字符集。
+   */
   public final Charset getDefaultCharset() {
     return defaultCharset;
   }
 
+  /**
+   * 设置默认的字符集。
+   *
+   * @param defaultCharset 要设置的默认字符集。
+   */
   public final void setDefaultCharset(final Charset defaultCharset) {
     this.defaultCharset = defaultCharset;
   }
@@ -79,14 +102,21 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
     }
     ClientHttpResponse response = execution.execute(request, body);
     if (enabled) {
-      // the traceResponse() will log the response body, so we need to buffer the
-      // response body to avoid the response body being consumed.
+      // traceResponse() 方法会记录响应体，
+      // 因此我们需要缓冲响应体以避免响应体被消耗。
       response = new BufferedClientHttpResponse(response);
       traceResponse(response);
     }
     return response;
   }
 
+  /**
+   * 追踪并记录HTTP请求的详细信息。
+   *
+   * @param request HTTP请求对象。
+   * @param body 请求体内容的字节数组。
+   * @throws IOException 如果读取请求信息时发生I/O错误。
+   */
   private void traceRequest(final HttpRequest request, final byte[] body) throws IOException {
     final Charset charset = getCharset(request);
     logger.debug("=========================== request begin ===========================");
@@ -97,6 +127,12 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
     logger.debug("============================ request end ===========================");
   }
 
+  /**
+   * 追踪并记录HTTP响应的详细信息。
+   *
+   * @param response HTTP响应对象，其响应体应该是可重复读取的（例如，通过 {@link BufferedClientHttpResponse} 包装）。
+   * @throws IOException 如果读取响应信息时发生I/O错误。
+   */
   private void traceResponse(final ClientHttpResponse response) throws IOException {
     final Charset charset = getCharset(response);
     logger.debug("=========================== response begin ===========================");
@@ -107,6 +143,16 @@ public class LoggingClientHttpRequestInterceptor implements ClientHttpRequestInt
     logger.debug("=========================== response end ===========================");
   }
 
+  /**
+   * 从HTTP消息（请求或响应）中获取字符集。
+   * <p>
+   * 它首先尝试从消息的 Content-Type 头部获取字符集。
+   * 如果头部中没有指定字符集，则返回配置的 {@link #defaultCharset}。
+   * </p>
+   *
+   * @param message HTTP消息对象，可以是 {@link HttpRequest} 或 {@link ClientHttpResponse}。
+   * @return 解析得到的字符集，或者在无法确定时返回默认字符集。
+   */
   private Charset getCharset(final HttpMessage message) {
     return Optional.ofNullable(message.getHeaders().getContentType())
                    .map(MediaType::getCharset)

@@ -16,23 +16,38 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import ltd.qubit.commons.lang.StringUtils;
 
+/**
+ * 提供与 {@link HttpServletRequest} 和 {@link HttpServletResponse} 相关的实用方法。
+ * 
+ * @author 胡海星
+ */
 public class HttpServletUtils {
 
+  /**
+   * 判断HTTP请求是否为 multipart 类型。
+   *
+   * @param request HTTP请求对象。
+   * @return 如果请求的 Content-Type 以 "multipart/" 开头（忽略大小写），则返回 {@code true}；否则返回 {@code false}。
+   */
   public static boolean isMultipart(final HttpServletRequest request) {
     return StringUtils.startsWithIgnoreCase(request.getContentType(), "multipart/");
   }
 
+  /**
+   * 判断HTTP请求是否为 www-form 类型 (application/x-www-form-urlencoded)。
+   *
+   * @param request HTTP请求对象。
+   * @return 如果请求的 Content-Type 以 "application/x-www-form-urlencoded" 开头（忽略大小写），则返回 {@code true}；否则返回 {@code false}。
+   */
   public static boolean isWwwForm(final HttpServletRequest request) {
     return StringUtils.startsWithIgnoreCase(request.getContentType(), "application/x-www-form-urlencoded");
   }
 
   /**
-   * 判定响应是否为文件下载
+   * 判定响应是否为文件下载。
    *
-   * @param response
-   *    {@link BufferedHttpServletResponse} 对象。
-   * @return
-   *    若响应是文件下载，返回{@code true}；否则返回{@code false}。
+   * @param response {@link HttpServletResponse} 对象。
+   * @return 若响应是文件下载，返回{@code true}；否则返回{@code false}。
    */
   public static boolean isFileDownload(final HttpServletResponse response) {
     // 获取 Content-Disposition 和 Content-Type
@@ -43,12 +58,10 @@ public class HttpServletUtils {
   }
 
   /**
-   * 判定响应是否为二进制数据
+   * 判定响应是否为二进制数据。
    *
-   * @param response
-   *    {@link HttpServletResponse} 对象。
-   * @return
-   *    若响应是二进制数据，返回{@code true}；否则返回{@code false}。
+   * @param response {@link HttpServletResponse} 对象。
+   * @return 若响应是二进制数据，返回{@code true}；否则返回{@code false}。
    */
   public static boolean isBinary(final HttpServletResponse response) {
     final String contentType = response.getContentType();
@@ -62,10 +75,8 @@ public class HttpServletUtils {
   /**
    * 判定请求是否为二进制数据。
    *
-   * @param request
-   *    {@link HttpServletRequest} 对象。
-   * @return
-   *    若请求是二进制数据，返回{@code true}；否则返回{@code false}。
+   * @param request {@link HttpServletRequest} 对象。
+   * @return 若请求是二进制数据，返回{@code true}；否则返回{@code false}。
    */
   public static boolean isBinary(final HttpServletRequest request) {
     final String contentType = request.getContentType();
@@ -76,14 +87,11 @@ public class HttpServletUtils {
     return false;
   }
 
-
   /**
-   * 判定响应是否为文本数据
+   * 判定响应是否为文本数据。
    *
-   * @param response
-   *    {@link HttpServletResponse} 对象。
-   * @return
-   *    若响应是文本数据，返回{@code true}；否则返回{@code false}。
+   * @param response {@link HttpServletResponse} 对象。
+   * @return 若响应是文本数据，返回{@code true}；否则返回{@code false}。
    */
   public static boolean isTextual(final HttpServletResponse response) {
     final String contentType = response.getContentType();
@@ -97,10 +105,8 @@ public class HttpServletUtils {
   /**
    * 判定请求是否为文本数据。
    *
-   * @param request
-   *    {@link HttpServletRequest} 对象。
-   * @return
-   *    若请求是文本数据，返回{@code true}；否则返回{@code false}。
+   * @param request {@link HttpServletRequest} 对象。
+   * @return 若请求是文本数据，返回{@code true}；否则返回{@code false}。
    */
   public static boolean isTextual(final HttpServletRequest request) {
     final String contentType = request.getContentType();
@@ -111,39 +117,11 @@ public class HttpServletUtils {
     return false;
   }
 
-  // /**
-  //  * 判定响应是否为二进制数据或文件下载
-  //  *
-  //  * @param response
-  //  *    {@link BufferedHttpServletResponse} 对象。
-  //  * @return
-  //  *    若响应是文件下载或二进制数据，返回{@code true}；否则返回{@code false}。
-  //  */
-  // public static boolean isBinaryOrFileDownload(final jakarta.servlet.http.HttpServletResponse response) {
-  //   // 获取 Content-Disposition 和 Content-Type
-  //   final String contentDisposition = response.getHeader("Content-Disposition");
-  //   // 判定 Content-Disposition 是否指示附件或包含文件名
-  //   if ((contentDisposition != null)
-  //       && (contentDisposition.contains("attachment")
-  //         || contentDisposition.contains("filename"))) {
-  //     return true;
-  //   }
-  //   final String contentType = response.getContentType();
-  //   // 判定 Content-Type 是否为常见的二进制数据类型
-  //   if (contentType != null) {
-  //     return isBinaryContentType(contentType);
-  //   }
-  //   // 如果未匹配任何规则，则认为不是二进制数据
-  //   return false;
-  // }
-
   /**
-   * 判断 Content-Type 是否为常见的文本数据类型
+   * 判断 Content-Type 是否为常见的文本数据类型。
    *
-   * @param contentType
-   *    响应的 Content-Type
-   * @return
-   *    若为文本数据类型，返回{@code true}；否则返回{@code false}.
+   * @param contentType 响应的 Content-Type。
+   * @return 若为文本数据类型，返回{@code true}；否则返回{@code false}。
    */
   private static boolean isTextualContentType(final String contentType) {
     return contentType.startsWith("text/")
@@ -151,12 +129,10 @@ public class HttpServletUtils {
   }
 
   /**
-   * 判断 Content-Type 是否为常见的二进制数据类型
+   * 判断 Content-Type 是否为常见的二进制数据类型。
    *
-   * @param contentType
-   *    响应的 Content-Type
-   * @return
-   *    若为二进制数据类型，返回{@code true}；否则返回{@code false}.
+   * @param contentType 响应的 Content-Type。
+   * @return 若为二进制数据类型，返回{@code true}；否则返回{@code false}。
    */
   private static boolean isBinaryContentType(final String contentType) {
     if (contentType.startsWith("application/")) {
@@ -169,6 +145,9 @@ public class HttpServletUtils {
         || contentType.startsWith("multipart/");               // multipart
   }
 
+  /**
+   * 存储常见的文本类型的 application/* Content-Type 集合。
+   */
   // 定义需要排除的常见文本类型
   private static final Set<String> TEXTUAL_APPLICATION_TYPES = new HashSet<>();
   static {

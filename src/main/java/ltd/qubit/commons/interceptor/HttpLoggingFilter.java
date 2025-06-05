@@ -45,6 +45,9 @@ import static ltd.qubit.commons.interceptor.HttpServletUtils.isTextual;
  */
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
+  /**
+   * 日志记录器。
+   */
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
@@ -52,8 +55,14 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
    */
   private boolean enabled = true;
 
+  /**
+   * 是否打印上传内容的文本表示（如果内容是文本类型）。
+   */
   private boolean printUploadContent = false;
 
+  /**
+   * 是否打印下载内容的文本表示（如果内容是文本类型）。
+   */
   private boolean printDownloadContent = false;
 
   /**
@@ -61,38 +70,87 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
    */
   private Charset defaultCharset = StandardCharsets.UTF_8;
 
+  /**
+   * 检查此过滤器是否启用。
+   *
+   * @return 如果过滤器启用，则返回true；否则返回false。
+   */
   public boolean isEnabled() {
     return enabled;
   }
 
+  /**
+   * 设置此过滤器的启用状态。
+   *
+   * @param enabled 如果为true，则启用过滤器；如果为false，则禁用过滤器。
+   */
   public void setEnabled(final boolean enabled) {
     this.enabled = enabled;
   }
 
+  /**
+   * 检查是否配置为打印上传内容的文本表示。
+   *
+   * @return 如果配置为打印上传内容的文本表示，则返回true；否则返回false。
+   */
   public boolean isPrintUploadTextualContent() {
     return printUploadContent;
   }
 
+  /**
+   * 设置是否打印上传内容的文本表示。
+   *
+   * @param printUploadTextualContent 如果为true，则打印上传内容的文本表示（如果内容是文本类型）；
+   *                                  否则不打印。
+   */
   public void setPrintUploadTextualContent(final boolean printUploadTextualContent) {
     this.printUploadContent = printUploadTextualContent;
   }
 
+  /**
+   * 检查是否配置为打印下载内容的文本表示。
+   *
+   * @return 如果配置为打印下载内容的文本表示，则返回true；否则返回false。
+   */
   public boolean isPrintDownloadTextualContent() {
     return printDownloadContent;
   }
 
+  /**
+   * 设置是否打印下载内容的文本表示。
+   *
+   * @param printDownloadTextualContent 如果为true，则打印下载内容的文本表示（如果内容是文本类型）；
+   *                                  否则不打印。
+   */
   public void setPrintDownloadTextualContent(final boolean printDownloadTextualContent) {
     this.printDownloadContent = printDownloadTextualContent;
   }
 
+  /**
+   * 获取默认的字符集。
+   *
+   * @return 默认字符集。
+   */
   public final Charset getDefaultCharset() {
     return defaultCharset;
   }
 
+  /**
+   * 设置默认的字符集。
+   *
+   * @param defaultCharset 要设置的默认字符集。
+   */
   public final void setDefaultCharset(final Charset defaultCharset) {
     this.defaultCharset = defaultCharset;
   }
 
+  /**
+   * 初始化过滤器Bean。
+   * <p>
+   * 此方法从过滤器配置中读取 `enabled` 和 `defaultCharset` 初始化参数，
+   * 并相应地配置此过滤器实例。
+   * </p>
+   */
   @Override
   protected void initFilterBean() {
     final FilterConfig filterConfig = getFilterConfig();
@@ -109,6 +167,21 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 对HTTP请求和响应进行过滤和日志记录的核心方法。
+   * <p>
+   * 如果过滤器已启用，此方法会包装原始的请求和响应对象为可缓冲的类型，
+   * 然后记录请求详情，接着将请求传递给过滤器链中的下一个过滤器，
+   * 最后记录响应详情。
+   * 如果过滤器被禁用，则直接将请求和响应传递给下一个过滤器，不进行日志记录。
+   * </p>
+   *
+   * @param request 当前的HTTP请求。
+   * @param response 当前的HTTP响应。
+   * @param filterChain 过滤器链。
+   * @throws ServletException 如果在处理请求或响应时发生Servlet相关异常。
+   * @throws IOException 如果在处理请求或响应时发生I/O异常。
+   */
   @Override
   protected void doFilterInternal(@Nonnull final HttpServletRequest request,
       @Nonnull final jakarta.servlet.http.HttpServletResponse response,
@@ -128,6 +201,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 记录HTTP请求的详细信息。
+   *
+   * @param request 已缓冲的HTTP请求对象，从中可以读取请求体内容。
+   */
   private void loggingRequest(final BufferedHttpServletRequest request) {
     logger.debug("=========================== request begin ===========================");
     logger.debug("URI         : {}", request.getRequestURI());
@@ -150,6 +228,15 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     logger.debug("============================ request end ============================");
   }
 
+  /**
+   * 记录 multipart/form-data 请求的各个部分信息。
+   * <p>
+   * 此方法会迭代请求中的所有部分 (Part)，并记录每个部分的名称、文件名（如果存在）以及相关的头部信息。
+   * 如果在解析过程中发生错误，会记录错误日志。
+   * </p>
+   *
+   * @param request 包含 multipart/form-data 的已缓冲HTTP请求对象。
+   */
   private void loggingMultipart(final BufferedHttpServletRequest request) {
     try {
       final Collection<Part> parts = request.getParts();
@@ -170,6 +257,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 记录HTTP响应的详细信息。
+   *
+   * @param response 已缓冲的HTTP响应对象，从中可以读取响应体内容。
+   */
   private void loggingResponse(final BufferedHttpServletResponse response) {
     final Map<String, List<String>> headers = response.getHeaders();
     logger.debug("=========================== response begin ===========================");
@@ -187,6 +279,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     logger.debug("============================ response end ============================");
   }
 
+  /**
+   * 记录HTTP头部信息。
+   *
+   * @param headers 包含头部名称到头部值列表映射的Map。
+   */
   private void loggingHeaders(final Map<String, List<String>> headers) {
     for (final String key : headers.keySet()) {
       for (final String value: headers.get(key)) {
@@ -195,6 +292,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 记录HTTP请求参数。
+   *
+   * @param params 包含参数名称到参数值数组映射的Map。
+   */
   private void loggingParameters(final Map<String, String[]> params) {
     for (final String key : params.keySet()) {
       for (final String value: params.get(key)) {
@@ -203,6 +305,16 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
     }
   }
 
+  /**
+   * 根据提供的名称获取字符集实例。
+   * <p>
+   * 如果名称为null，或者根据名称找不到对应的字符集，或者发生其他异常，
+   * 则会记录警告日志并返回默认字符集 {@link #defaultCharset}。
+   * </p>
+   *
+   * @param name 字符集的名称，例如 "UTF-8"。
+   * @return 对应的 {@link Charset} 实例，或者在无法解析时返回默认字符集。
+   */
   private Charset getCharsetImpl(final String name) {
     if (name == null) {
       logger.warn("No character encoding for the HTTP servlet request, "
